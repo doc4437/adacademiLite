@@ -14,11 +14,12 @@ export function StudentForm() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget; // cache before async work
+    const formData = new FormData(form);
     startTransition(async () => {
       const result = await createStudent(formData);
       if (result.success) {
-        event.currentTarget.reset();
+        form.reset();
         setAccessCode("");
         toast({ title: "Student added" });
       } else {

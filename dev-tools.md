@@ -1,0 +1,2 @@
+-[ ] Forgiving of assigments functionality? Teachers ability to mark assigments as turned in. 
+-[ ] What happens when assigments get returned? What does returning assigments even mean?

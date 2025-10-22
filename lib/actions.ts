@@ -13,12 +13,29 @@ const studentSchema = z.object({
   active: z.boolean().default(true),
 });
 
-const assignmentSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  sourceUrl: z.string().url("Provide a valid URL"),
-  instructions: z.string().min(1, "Instructions are required"),
-  dueAt: z.string().optional().nullable(),
+const studentStatusSchema = z.object({
+  studentId: z.string().min(1, "Student id is required"),
+  active: z.boolean(),
 });
+
+const studentAccessCodeSchema = z.object({
+  studentId: z.string().min(1, "Student id is required"),
+  previousAccessCode: z.string().optional(),
+  accessCode: z.string().min(4, "Access code must be at least 4 characters").max(64, "Access code is too long"),
+});
+const assignmentSchema = z
+  .object({
+    title: z.string().min(1, "Title is required"),
+    sourceUrl: z.string().url("Provide a valid URL"),
+    instructions: z.string().min(1, "Instructions are required"),
+    dueAt: z.string().optional().nullable(),
+    assignScope: z.enum(["all", "selected"]).default("all"),
+    studentIds: z.array(z.string().min(1)).optional(),
+  })
+  .refine((value) => (value.assignScope === "selected" ? (value.studentIds?.length ?? 0) > 0 : true), {
+    message: "Select at least one student",
+    path: ["studentIds"],
+  });
 
 const taskAssignmentSchema = z.object({
   studentIds: z.array(z.string().min(1)),
@@ -56,12 +73,59 @@ export async function createStudent(formData: FormData) {
   return { success: true };
 }
 
+export async function setStudentActive(studentId: string, active: boolean) {
+  const parsed = studentStatusSchema.safeParse({ studentId, active });
+
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.flatten().formErrors.join(", ") };
+  }
+
+  await db
+    .update(students)
+    .set({ active: parsed.data.active })
+    .where(eq(students.id, parsed.data.studentId));
+
+  revalidatePath("/admin/students");
+  return { success: true };
+}
+
+export async function updateStudentAccessCode(studentId: string, accessCode: string, previousAccessCode?: string) {
+  const parsed = studentAccessCodeSchema.safeParse({ studentId, accessCode, previousAccessCode });
+
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.flatten().formErrors.join(", ") };
+  }
+
+  try {
+    await db
+      .update(students)
+      .set({ accessCode: parsed.data.accessCode })
+      .where(eq(students.id, parsed.data.studentId));
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("UNIQUE")) {
+      return { success: false, error: "That access code is already in use." };
+    }
+    console.error("Failed to update student access code", error);
+    return { success: false, error: "Something went wrong updating the access code." };
+  }
+
+  revalidatePath("/admin/students");
+  revalidatePath(`/s/${parsed.data.accessCode}`);
+  if (parsed.data.previousAccessCode && parsed.data.previousAccessCode !== parsed.data.accessCode) {
+    revalidatePath(`/s/${parsed.data.previousAccessCode}`);
+  }
+
+  return { success: true };
+}
+
 export async function createAssignment(formData: FormData) {
   const parsed = assignmentSchema.safeParse({
     title: formData.get("title"),
     sourceUrl: formData.get("sourceUrl"),
     instructions: formData.get("instructions"),
     dueAt: formData.get("dueAt"),
+    assignScope: typeof formData.get("assignScope") === "string" ? (formData.get("assignScope") as string) : "all",
+    studentIds: formData.getAll("studentIds").map((value) => value.toString()),
   });
 
   if (!parsed.success) {
@@ -70,9 +134,10 @@ export async function createAssignment(formData: FormData) {
 
   const dueAt = parsed.data.dueAt ? new Date(parsed.data.dueAt) : null;
   const now = new Date();
+  const assignmentId = createId();
 
   await db.insert(assignments).values({
-    id: createId(),
+    id: assignmentId,
     title: parsed.data.title,
     sourceUrl: parsed.data.sourceUrl,
     instructions: parsed.data.instructions,
@@ -80,8 +145,42 @@ export async function createAssignment(formData: FormData) {
     createdAt: now,
   });
 
+  let targetStudentIds: string[] = [];
+
+  if (parsed.data.assignScope === "selected" && parsed.data.studentIds) {
+    targetStudentIds = parsed.data.studentIds;
+  } else if (parsed.data.assignScope === "all") {
+    const allStudentRows = await db.select({ id: students.id }).from(students);
+    targetStudentIds = allStudentRows.map((row) => row.id);
+  }
+
+  if (targetStudentIds.length > 0) {
+    const taskRows = targetStudentIds.map((studentId) => ({
+      id: createId(),
+      studentId,
+      assignmentId,
+      status: TaskStatus.ASSIGNED,
+      createdAt: now,
+      updatedAt: now,
+    }));
+
+    await db.insert(tasks).values(taskRows);
+
+    const affectedStudents = await db
+      .select({ accessCode: students.accessCode })
+      .from(students)
+      .where(inArray(students.id, targetStudentIds));
+
+    affectedStudents.forEach((student) => {
+      if (student.accessCode) {
+        revalidatePath(`/s/${student.accessCode}`);
+      }
+    });
+  }
+
   revalidatePath("/admin/assignments");
   revalidatePath("/admin/tasks");
+  revalidatePath("/admin");
   return { success: true };
 }
 

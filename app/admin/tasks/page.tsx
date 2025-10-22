@@ -12,14 +12,21 @@ import { and, desc, eq, sql } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
-type SearchParams = {
-  student?: string;
-  status?: string;
+type TaskSearchParams = {
+  student?: string | string[];
+  status?: string | string[];
 };
 
-export default async function AdminTasksPage({ searchParams }: { searchParams?: SearchParams }) {
-  const selectedStudent = typeof searchParams?.student === "string" ? searchParams.student : "";
-  const selectedStatus = typeof searchParams?.status === "string" ? searchParams.status : "";
+type AdminTasksPageProps = {
+  searchParams?: Promise<TaskSearchParams>;
+};
+
+export default async function AdminTasksPage({ searchParams }: AdminTasksPageProps) {
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const selectedStudent =
+    typeof resolvedSearchParams.student === "string" ? resolvedSearchParams.student : "";
+  const selectedStatus =
+    typeof resolvedSearchParams.status === "string" ? resolvedSearchParams.status : "";
 
   const allStudents = await db
     .select({ id: students.id, displayName: students.displayName })

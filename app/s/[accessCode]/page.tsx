@@ -7,8 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
 
-export default async function StudentPortalPage({ params }: { params: { accessCode: string } }) {
-  const [student] = await db.select().from(students).where(eq(students.accessCode, params.accessCode)).limit(1);
+type StudentPortalPageProps = {
+  params: Promise<{ accessCode: string }>;
+};
+
+export default async function StudentPortalPage({ params }: StudentPortalPageProps) {
+  const { accessCode } = await params;
+  const [student] = await db.select().from(students).where(eq(students.accessCode, accessCode)).limit(1);
 
   if (!student) {
     notFound();
