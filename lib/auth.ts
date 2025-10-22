@@ -3,17 +3,17 @@ import { env } from "./env";
 
 const ADMIN_COOKIE = "adacademi_admin";
 
-export function hasAdminSession() {
-  const cookieStore = cookies();
+export async function hasAdminSession() {
+  const cookieStore = await cookies();
   return cookieStore.get(ADMIN_COOKIE)?.value === "1";
 }
 
-export function requireAdminSession() {
+export async function requireAdminSession() {
   return hasAdminSession();
 }
 
 export async function createAdminSession() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   cookieStore.set(ADMIN_COOKIE, "1", {
     httpOnly: true,
     sameSite: "lax",
