@@ -79,8 +79,8 @@ export default async function AdminAssignmentsPage() {
     const inProgressCount = counts[TaskStatus.IN_PROGRESS] ?? 0;
     const submittedCount = counts[TaskStatus.SUBMITTED] ?? 0;
     const returnedCount = counts[TaskStatus.RETURNED] ?? 0;
-    const openCount = assignedCount + inProgressCount;
-    const pendingCount = openCount + returnedCount;
+    const openCount = assignedCount + inProgressCount + returnedCount;
+    const pendingCount = openCount;
     const overdueCount = overdueByAssignment.get(assignment.id) ?? 0;
     const dueDate = assignment.dueAt ? new Date(assignment.dueAt) : null;
 
@@ -89,7 +89,6 @@ export default async function AdminAssignmentsPage() {
       assignedCount,
       inProgressCount,
       submittedCount,
-      returnedCount,
       overdueCount,
       openCount,
       pendingCount,
@@ -167,7 +166,7 @@ export default async function AdminAssignmentsPage() {
             </TableHeader>
             <TableBody>
               {assignmentSummaries.map((assignment) => {
-                const { dueDate, pendingCount, openCount, submittedCount, returnedCount, overdueCount } = assignment;
+                const { dueDate, pendingCount, openCount, submittedCount, overdueCount } = assignment;
                 const dueSoon =
                   dueDate !== null &&
                   dueDate.getTime() >= now.getTime() &&
@@ -176,7 +175,6 @@ export default async function AdminAssignmentsPage() {
                 const overdue = dueDate !== null && dueDate.getTime() < now.getTime() && pendingCount > 0;
                 const isOverdue = overdueCount > 0;
                 const tooltip = isOverdue ? `Overdue: ${overdueCount}` : undefined;
-                const returnedBadgeVariant = isOverdue ? "outline" : "destructive";
 
                 return (
                   <TableRow key={assignment.id} className={cn(isOverdue ? "bg-destructive/5" : undefined)} title={tooltip}>
@@ -204,9 +202,6 @@ export default async function AdminAssignmentsPage() {
                         {isOverdue ? <Badge variant="destructive">Overdue {overdueCount}</Badge> : null}
                         {openCount > 0 ? <Badge variant="secondary">Open {openCount}</Badge> : null}
                         {submittedCount > 0 ? <Badge>Submitted {submittedCount}</Badge> : null}
-                        {returnedCount > 0 ? (
-                          <Badge variant={returnedBadgeVariant}>Returned {returnedCount}</Badge>
-                        ) : null}
                         {pendingCount === 0 && submittedCount === 0 ? (
                           <span className="text-xs text-muted-foreground">No tasks</span>
                         ) : null}
@@ -264,11 +259,6 @@ export default async function AdminAssignmentsPage() {
                           ) : null}
                           {assignment.openCount > 0 ? (
                             <Badge variant="secondary">Open {assignment.openCount}</Badge>
-                          ) : null}
-                          {assignment.returnedCount > 0 ? (
-                            <Badge variant={assignment.overdueCount > 0 ? "outline" : "destructive"}>
-                              Returned {assignment.returnedCount}
-                            </Badge>
                           ) : null}
                           {assignment.submittedCount > 0 ? (
                             <Badge>Submitted {assignment.submittedCount}</Badge>

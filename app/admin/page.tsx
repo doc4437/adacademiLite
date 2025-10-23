@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { assignments, students, tasks } from "@/lib/schema";
+import { assignments, students, tasks, TaskStatus } from "@/lib/schema";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { taskStatusLabels, taskStatusOrder } from "@/lib/utils";
+import { taskStatusLabels, taskStatusDisplayOrder } from "@/lib/utils";
 import { eq, sql } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -13,15 +13,26 @@ export default async function AdminDashboardPage() {
     const [studentCount] = await db.select({ count: sql<number>`count(*)` }).from(students);
     const [assignmentCount] = await db.select({ count: sql<number>`count(*)` }).from(assignments);
 
-    const statusCounts = await Promise.all(
-      taskStatusOrder.map(async (status) => {
-        const [result] = await db
-          .select({ count: sql<number>`count(*)` })
-          .from(tasks)
-          .where(eq(tasks.status, status));
-        return { status, count: result?.count ?? 0 };
+    const statusCountsRaw = await db
+      .select({
+        status: tasks.status,
+        count: sql<number>`count(*)`,
       })
-    );
+      .from(tasks)
+      .groupBy(tasks.status);
+
+    const statusCountMap = new Map<(typeof TaskStatus)[keyof typeof TaskStatus], number>();
+    statusCountsRaw.forEach((row) => {
+      statusCountMap.set(row.status, row.count ?? 0);
+    });
+
+    const returnedCount = statusCountMap.get(TaskStatus.RETURNED) ?? 0;
+
+    const statusCounts = taskStatusDisplayOrder.map((status) => {
+      const baseCount = statusCountMap.get(status) ?? 0;
+      const count = status === TaskStatus.IN_PROGRESS ? baseCount + returnedCount : baseCount;
+      return { status, count };
+    });
 
     return (
       <div className="grid gap-6 md:grid-cols-2">

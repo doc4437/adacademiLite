@@ -4,7 +4,6 @@ import { assignments, students, tasks, TaskStatus } from "@/lib/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TaskAssignForm } from "@/components/forms/task-assign-form";
-import { ReturnDialog } from "@/components/forms/return-dialog";
 import { TaskStatusButton } from "@/components/forms/task-status-button";
 import { TaskFilters } from "@/components/forms/task-filters";
 import { taskStatusLabels } from "@/lib/utils";
@@ -110,7 +109,6 @@ export default async function AdminTasksPage({ searchParams }: AdminTasksPagePro
                     {task.status !== TaskStatus.SUBMITTED ? (
                       <TaskStatusButton taskId={task.id} status={TaskStatus.SUBMITTED} label="Mark Submitted" />
                     ) : null}
-                    <ReturnDialog taskId={task.id} studentName={task.studentName} />
                   </TableCell>
                 </TableRow>
               ))}

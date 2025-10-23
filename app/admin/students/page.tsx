@@ -99,11 +99,10 @@ export default async function AdminStudentsPage() {
                 const inProgressCount = counts[TaskStatus.IN_PROGRESS] ?? 0;
                 const submittedCount = counts[TaskStatus.SUBMITTED] ?? 0;
                 const returnedCount = counts[TaskStatus.RETURNED] ?? 0;
-                const openCount = assignedCount + inProgressCount;
-                const hasTasks = openCount + submittedCount + returnedCount > 0;
+                const openCount = assignedCount + inProgressCount + returnedCount;
+                const hasTasks = openCount + submittedCount > 0;
                 const overdueCount = overdueByStudent.get(student.id) ?? 0;
                 const isOverdue = overdueCount > 0;
-                const returnedBadgeVariant = isOverdue ? "outline" : "destructive";
 
                 return (
                   <TableRow key={student.id} className={cn(isOverdue ? "bg-destructive/5" : undefined)}>
@@ -128,9 +127,6 @@ export default async function AdminStudentsPage() {
                         {isOverdue ? <Badge variant="destructive">Overdue {overdueCount}</Badge> : null}
                         {openCount > 0 ? <Badge variant="secondary">Open {openCount}</Badge> : null}
                         {submittedCount > 0 ? <Badge>Submitted {submittedCount}</Badge> : null}
-                        {returnedCount > 0 ? (
-                          <Badge variant={returnedBadgeVariant}>Returned {returnedCount}</Badge>
-                        ) : null}
                         {!hasTasks ? <span className="text-xs text-muted-foreground">No tasks</span> : null}
                       </div>
                     </TableCell>

@@ -2,8 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { taskStatusLabels } from "@/lib/utils";
-import { TaskStatus } from "@/lib/schema";
+import { taskStatusDisplayOrder, taskStatusLabels } from "@/lib/utils";
 
 export function TaskFilters({
   students,
@@ -49,7 +48,7 @@ export function TaskFilters({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="">All statuses</SelectItem>
-          {Object.values(TaskStatus).map((status) => (
+          {taskStatusDisplayOrder.map((status) => (
             <SelectItem key={status} value={status}>
               {taskStatusLabels[status]}
             </SelectItem>

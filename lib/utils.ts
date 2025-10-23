@@ -23,11 +23,10 @@ export const taskStatusLabels: Record<(typeof TaskStatus)[keyof typeof TaskStatu
   RETURNED: "Returned",
 };
 
-export const taskStatusOrder: (typeof TaskStatus)[keyof typeof TaskStatus][] = [
+export const taskStatusDisplayOrder: (typeof TaskStatus)[keyof typeof TaskStatus][] = [
   TaskStatus.ASSIGNED,
   TaskStatus.IN_PROGRESS,
   TaskStatus.SUBMITTED,
-  TaskStatus.RETURNED,
 ];
 
 export function formatDate(value: Date | string | null) {

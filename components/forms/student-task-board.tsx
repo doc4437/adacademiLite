@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { taskStatusLabels, taskStatusOrder } from "@/lib/utils";
+import { taskStatusLabels, taskStatusDisplayOrder } from "@/lib/utils";
 import { StudentStartButton } from "./student-start-button";
 import { StudentSubmissionDialog } from "./student-submission-dialog";
 import { TaskStatus } from "@/lib/schema";
@@ -18,18 +18,25 @@ export type StudentTask = {
 };
 
 export function StudentTaskBoard({ tasks }: { tasks: StudentTask[] }) {
-  const grouped = taskStatusOrder.reduce<Record<string, StudentTask[]>>((acc, status) => {
-    acc[status] = tasks.filter((task) => task.status === status);
+  const grouped = taskStatusDisplayOrder.reduce<Record<string, StudentTask[]>>((acc, status) => {
+    acc[status] = [];
     return acc;
   }, {});
 
+  tasks.forEach((task) => {
+    const bucket = task.status === TaskStatus.RETURNED ? TaskStatus.IN_PROGRESS : task.status;
+    if (bucket in grouped) {
+      grouped[bucket]?.push(task);
+    }
+  });
+
   return (
     <div className="grid gap-4">
-      {taskStatusOrder.map((status) => (
+      {taskStatusDisplayOrder.map((status) => (
         <Card key={status} className="border-muted">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base">{taskStatusLabels[status]}</CardTitle>
-            <Badge variant={status === TaskStatus.RETURNED ? "destructive" : "secondary"}>{grouped[status]?.length ?? 0}</Badge>
+            <Badge variant="secondary">{grouped[status]?.length ?? 0}</Badge>
           </CardHeader>
           <CardContent className="space-y-4">
             {grouped[status]?.length ? (
@@ -39,12 +46,15 @@ export function StudentTaskBoard({ tasks }: { tasks: StudentTask[] }) {
                     <div>
                       <h3 className="text-sm font-semibold">{task.assignmentTitle}</h3>
                       <p className="text-xs text-muted-foreground">{task.instructions}</p>
+                      {task.status === TaskStatus.RETURNED ? (
+                        <Badge variant="destructive" className="mt-2">
+                          Needs updates
+                        </Badge>
+                      ) : null}
                     </div>
                     <div className="flex gap-2">
                       {status === TaskStatus.ASSIGNED ? <StudentStartButton taskId={task.id} sourceUrl={task.sourceUrl} /> : null}
-                      {status === TaskStatus.IN_PROGRESS || status === TaskStatus.RETURNED ? (
-                        <StudentSubmissionDialog taskId={task.id} />
-                      ) : null}
+                      {status === TaskStatus.IN_PROGRESS ? <StudentSubmissionDialog taskId={task.id} /> : null}
                     </div>
                   </div>
                   {task.latestArtifact ? (

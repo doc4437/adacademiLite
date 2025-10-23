@@ -298,30 +298,3 @@ export async function recordSubmission(formData: FormData) {
   revalidatePath("/admin/tasks");
   return { success: true };
 }
-
-export async function returnSubmission(taskId: string, notes?: string | null) {
-  await db.insert(submissions).values({
-    id: createId(),
-    taskId,
-    artifactUrl: "",
-    notes: notes ?? null,
-    submittedAt: new Date(),
-  });
-
-  await db
-    .update(tasks)
-    .set({ status: TaskStatus.RETURNED, updatedAt: new Date() })
-    .where(eq(tasks.id, taskId));
-
-  const [taskRow] = await db
-    .select({ accessCode: students.accessCode })
-    .from(tasks)
-    .innerJoin(students, eq(tasks.studentId, students.id))
-    .where(eq(tasks.id, taskId));
-
-  if (taskRow?.accessCode) {
-    revalidatePath(`/s/${taskRow.accessCode}`);
-  }
-
-  revalidatePath("/admin/tasks");
-}
