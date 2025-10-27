@@ -99,8 +99,8 @@ export default async function AdminStudentsPage() {
                 const inProgressCount = counts[TaskStatus.IN_PROGRESS] ?? 0;
                 const submittedCount = counts[TaskStatus.SUBMITTED] ?? 0;
                 const returnedCount = counts[TaskStatus.RETURNED] ?? 0;
-                const openCount = assignedCount + inProgressCount + returnedCount;
-                const hasTasks = openCount + submittedCount > 0;
+                const activeCount = inProgressCount + returnedCount;
+                const hasTasks = assignedCount + activeCount + submittedCount > 0;
                 const overdueCount = overdueByStudent.get(student.id) ?? 0;
                 const isOverdue = overdueCount > 0;
 
@@ -125,8 +125,8 @@ export default async function AdminStudentsPage() {
                     <TableCell className="text-right">
                       <div className="flex flex-wrap justify-end gap-2">
                         {isOverdue ? <Badge variant="destructive">Overdue {overdueCount}</Badge> : null}
-                        {openCount > 0 ? <Badge variant="secondary">Open {openCount}</Badge> : null}
-                        {submittedCount > 0 ? <Badge>Submitted {submittedCount}</Badge> : null}
+                        {activeCount > 0 ? <Badge variant="secondary">Open {activeCount}</Badge> : null}
+                        {assignedCount > 0 ? <Badge variant="outline">Assigned {assignedCount}</Badge> : null}
                         {!hasTasks ? <span className="text-xs text-muted-foreground">No tasks</span> : null}
                       </div>
                     </TableCell>

@@ -17,14 +17,24 @@ export type StudentTask = {
   latestArtifact: string | null;
 };
 
-export function StudentTaskBoard({ tasks }: { tasks: StudentTask[] }) {
-  const grouped = taskStatusDisplayOrder.reduce<Record<string, StudentTask[]>>((acc, status) => {
+type StudentTaskBoardProps = {
+  tasks: StudentTask[];
+  hiddenStatuses?: (typeof TaskStatus)[keyof typeof TaskStatus][];
+};
+
+export function StudentTaskBoard({ tasks, hiddenStatuses = [] }: StudentTaskBoardProps) {
+  const visibleStatuses = taskStatusDisplayOrder.filter((status) => !hiddenStatuses.includes(status));
+
+  const grouped = visibleStatuses.reduce<Record<string, StudentTask[]>>((acc, status) => {
     acc[status] = [];
     return acc;
   }, {});
 
   tasks.forEach((task) => {
     const bucket = task.status === TaskStatus.RETURNED ? TaskStatus.IN_PROGRESS : task.status;
+    if (hiddenStatuses.includes(bucket)) {
+      return;
+    }
     if (bucket in grouped) {
       grouped[bucket]?.push(task);
     }
@@ -32,7 +42,7 @@ export function StudentTaskBoard({ tasks }: { tasks: StudentTask[] }) {
 
   return (
     <div className="grid gap-4">
-      {taskStatusDisplayOrder.map((status) => (
+      {visibleStatuses.map((status) => (
         <Card key={status} className="border-muted">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base">{taskStatusLabels[status]}</CardTitle>

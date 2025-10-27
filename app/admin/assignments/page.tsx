@@ -4,7 +4,8 @@ import { assignments, students, tasks, TaskStatus } from "@/lib/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AssignmentForm } from "@/components/forms/assignment-form";
-import { desc, eq, sql } from "drizzle-orm";
+import { AssignmentSubmissionsPopover } from "@/components/assignment-submissions-popover";
+import { asc, desc, eq, sql } from "drizzle-orm";
 import { cn, formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,26 @@ export default async function AdminAssignmentsPage() {
     })
     .from(tasks)
     .groupBy(tasks.assignmentId, tasks.status);
+
+  const assignmentSubmissionRows = await db
+    .select({
+      assignmentId: tasks.assignmentId,
+      taskId: tasks.id,
+      studentName: students.displayName,
+      latestArtifact: sql<string | null>`
+        (
+          SELECT artifactUrl
+          FROM submissions
+          WHERE submissions.taskId = ${tasks.id}
+          ORDER BY submissions.submittedAt DESC
+          LIMIT 1
+        )
+      `,
+    })
+    .from(tasks)
+    .innerJoin(students, eq(tasks.studentId, students.id))
+    .where(eq(tasks.status, TaskStatus.SUBMITTED))
+    .orderBy(asc(students.displayName));
 
   const assignmentOverdueCounts = await db
     .select({
@@ -73,14 +94,32 @@ export default async function AdminAssignmentsPage() {
     overdueByAssignment.set(row.assignmentId, row.overdueCount ?? 0);
   });
 
+  const submissionsByAssignment = new Map<
+    string,
+    {
+      taskId: string;
+      studentName: string;
+      latestArtifact: string | null;
+    }[]
+  >();
+  assignmentSubmissionRows.forEach((row) => {
+    const existing = submissionsByAssignment.get(row.assignmentId) ?? [];
+    existing.push({
+      taskId: row.taskId,
+      studentName: row.studentName,
+      latestArtifact: row.latestArtifact,
+    });
+    submissionsByAssignment.set(row.assignmentId, existing);
+  });
+
   const assignmentSummaries = allAssignments.map((assignment) => {
     const counts = countsByAssignment.get(assignment.id) ?? {};
     const assignedCount = counts[TaskStatus.ASSIGNED] ?? 0;
     const inProgressCount = counts[TaskStatus.IN_PROGRESS] ?? 0;
     const submittedCount = counts[TaskStatus.SUBMITTED] ?? 0;
     const returnedCount = counts[TaskStatus.RETURNED] ?? 0;
-    const openCount = assignedCount + inProgressCount + returnedCount;
-    const pendingCount = openCount;
+    const openCount = inProgressCount + returnedCount;
+    const pendingCount = assignedCount + openCount;
     const overdueCount = overdueByAssignment.get(assignment.id) ?? 0;
     const dueDate = assignment.dueAt ? new Date(assignment.dueAt) : null;
 
@@ -93,8 +132,11 @@ export default async function AdminAssignmentsPage() {
       openCount,
       pendingCount,
       dueDate,
+      submissions: submissionsByAssignment.get(assignment.id) ?? [],
     };
   });
+
+  const activeAssignments = assignmentSummaries.filter((assignment) => assignment.pendingCount > 0);
 
   const historyGroupsMap = new Map<
     string,
@@ -165,8 +207,8 @@ export default async function AdminAssignmentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {assignmentSummaries.map((assignment) => {
-                const { dueDate, pendingCount, openCount, submittedCount, overdueCount } = assignment;
+              {activeAssignments.map((assignment) => {
+                const { dueDate, pendingCount, openCount, submittedCount, overdueCount, assignedCount } = assignment;
                 const dueSoon =
                   dueDate !== null &&
                   dueDate.getTime() >= now.getTime() &&
@@ -201,7 +243,7 @@ export default async function AdminAssignmentsPage() {
                       <div className="flex flex-wrap justify-end gap-2">
                         {isOverdue ? <Badge variant="destructive">Overdue {overdueCount}</Badge> : null}
                         {openCount > 0 ? <Badge variant="secondary">Open {openCount}</Badge> : null}
-                        {submittedCount > 0 ? <Badge>Submitted {submittedCount}</Badge> : null}
+                        {assignedCount > 0 ? <Badge variant="outline">Assigned {assignedCount}</Badge> : null}
                         {pendingCount === 0 && submittedCount === 0 ? (
                           <span className="text-xs text-muted-foreground">No tasks</span>
                         ) : null}
@@ -214,6 +256,13 @@ export default async function AdminAssignmentsPage() {
                 <TableRow>
                   <TableCell colSpan={3} className="text-center text-sm text-muted-foreground">
                     No assignments yet.
+                  </TableCell>
+                </TableRow>
+              ) : null}
+              {allAssignments.length > 0 && activeAssignments.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center text-sm text-muted-foreground">
+                    No active assignments. Completed items are listed in Assignment History.
                   </TableCell>
                 </TableRow>
               ) : null}
@@ -260,8 +309,15 @@ export default async function AdminAssignmentsPage() {
                           {assignment.openCount > 0 ? (
                             <Badge variant="secondary">Open {assignment.openCount}</Badge>
                           ) : null}
+                          {assignment.assignedCount > 0 ? (
+                            <Badge variant="outline">Assigned {assignment.assignedCount}</Badge>
+                          ) : null}
                           {assignment.submittedCount > 0 ? (
-                            <Badge>Submitted {assignment.submittedCount}</Badge>
+                            assignment.submissions.length > 0 ? (
+                              <AssignmentSubmissionsPopover submissions={assignment.submissions} />
+                            ) : (
+                              <Badge>Submitted {assignment.submittedCount}</Badge>
+                            )
                           ) : null}
                           {assignment.pendingCount === 0 && assignment.submittedCount === 0 ? (
                             <span className="text-xs text-muted-foreground">No tasks</span>
