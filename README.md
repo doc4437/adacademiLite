@@ -67,6 +67,23 @@ Assignments should link to Google Docs/Sheets/Slides template URLs ending in `/c
 - `npm run db:migrate` – run pending migrations
 - `npm run seed` – populate demo records
 
+## Deploying to Vercel
+1. Connect the GitHub repo in Vercel (New Project → Import).
+2. In Vercel → Project → Settings → Environment Variables, add:
+   - `TURSO_CONNECTION_URL`
+   - `TURSO_AUTH_TOKEN`
+   - `ADMIN_PASSPHRASE`
+   - `ADMIN_EMAILS` (comma-separated list)
+   - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+   - `NEXTAUTH_SECRET` (generate with `npx auth secret`)
+   - Optional: `NEXTAUTH_URL` set to your production URL, e.g. `https://your-domain.vercel.app`
+3. In Google Cloud Console, set OAuth redirect URIs:
+   - Local: `http://localhost:3000/api/auth/callback/google`
+   - Prod: `https://<your-domain>/api/auth/callback/google`
+4. Build settings: Framework = Next.js (defaults are fine). No `vercel.json` required.
+5. Database: Run `npm run db:push` locally once against the same Turso DB to create tables. The Vercel build does not run migrations.
+6. Push to `main` (or your chosen branch) to trigger a deployment.
+
 ## Admin & Student Access
 - Visit `/admin` and enter the passphrase defined in `ADMIN_PASSPHRASE` to unlock admin views.
 - Students receive magic links at `/s/{accessCode}` (seed script prints codes).
