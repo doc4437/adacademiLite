@@ -1,3 +1,6 @@
+-[ ] Work on color palette
+-[ ] Work on header
+
 Auth and Deployment
 
 - Admin access uses Google OAuth via NextAuth. Configure env variables:
@@ -9,5 +12,5 @@ Auth and Deployment
 - Install dependency: `npm i next-auth`.
 - Google redirect URIs:
   - Local: `http://localhost:3000/api/auth/callback/google`
-  - Prod: `https://<your-domain>/api/auth/callback/google`
+  - Prod: `https://adacademilite.vercel.app/api/auth/callback/google`
 - Vercel: add all env vars under Project → Settings → Environment Variables.
