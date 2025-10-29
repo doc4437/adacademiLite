@@ -16,6 +16,19 @@ const config: Config = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        "rice-paper": "#F6F3EF",
+        "river-stone": "#2F2F2B",
+        clay: "#E9E5DF",
+        graphite: "#D1CDC7",
+        ink: "#3C3A37",
+        weathered: "#6C6963",
+        ash: "#B8B4AF",
+        moss: "#9BA88E",
+        umber: "#A58B6F",
+        gold: "#C7B77E",
+        "indigo-gray": "#6A6E7A",
+        "earth-red": "#B5654A",
+        "stone-dark": "#3A3935",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -48,6 +61,24 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],
+        serif: ["'DM Serif Display'", ...fontFamily.serif],
+      },
+      backgroundImage: {
+        "morning-mist": "linear-gradient(180deg, #F6F3EF 0%, #E9E5DF 100%)",
+        "evening-stone": "linear-gradient(180deg, #3A3935 0%, #2F2F2B 100%)",
+      },
+      boxShadow: {
+        "zen-sm": "0 1px 2px 0 rgba(60, 58, 55, 0.05)",
+        zen: "0 2px 4px 0 rgba(60, 58, 55, 0.08)",
+        "zen-md": "0 4px 8px 0 rgba(60, 58, 55, 0.12)",
+        "zen-lg": "0 8px 16px 0 rgba(60, 58, 55, 0.15)",
+        "zen-inner": "inset 0 2px 4px 0 rgba(60, 58, 55, 0.06)",
+      },
+      transitionDuration: {
+        breath: "250ms",
+      },
+      transitionTimingFunction: {
+        breath: "cubic-bezier(0.4, 0, 0.2, 1)",
       },
       keyframes: {
         "accordion-down": {

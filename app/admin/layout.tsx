@@ -7,7 +7,7 @@ export const metadata = {
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <AdminHeader />
       {children}
     </div>

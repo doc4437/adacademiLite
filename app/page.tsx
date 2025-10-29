@@ -26,9 +26,6 @@ export default function HomePage() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button asChild variant="outline">
-                <Link href="/admin/students">View Students</Link>
-              </Button>
             </div>
             <div className="rounded-md border bg-muted/30 p-4 text-left">
               <h2 className="text-sm font-semibold">Students:</h2>
