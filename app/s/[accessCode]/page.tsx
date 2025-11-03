@@ -31,6 +31,7 @@ export default async function StudentPortalPage({ params }: StudentPortalPagePro
       assignmentId: assignments.id,
       dueAt: assignments.dueAt,
       sourceUrl: assignments.sourceUrl,
+      requiresSubmission: assignments.requiresSubmission,
       latestArtifact: sql<string | null>`(SELECT artifactUrl FROM submissions WHERE submissions.taskId = ${tasks.id} ORDER BY submissions.submittedAt DESC LIMIT 1)`,
     })
     .from(tasks)
@@ -45,6 +46,7 @@ export default async function StudentPortalPage({ params }: StudentPortalPagePro
       assignmentTitle: task.assignmentTitle,
       instructions: task.instructions,
       sourceUrl: task.sourceUrl,
+      requiresSubmission: task.requiresSubmission,
       latestArtifact: task.latestArtifact,
     }));
 
@@ -97,7 +99,7 @@ export default async function StudentPortalPage({ params }: StudentPortalPagePro
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Open your assignment templates to work in Google Docs, Canva, or other tools. When you finish, submit a link so your teacher can review your work.
+            Open your assignments to work in Google Docs, YouTube, or other tools. When you finish, submit a link or mark it complete.
           </p>
         </CardContent>
       </Card>
@@ -139,7 +141,7 @@ export default async function StudentPortalPage({ params }: StudentPortalPagePro
                                 ]}
                               />
                             ) : (
-                              <Badge>Submitted</Badge>
+                              <Badge>Completed</Badge>
                             )
                           ) : null}
                           {task.status === TaskStatus.IN_PROGRESS ? <Badge variant="secondary">In Progress</Badge> : null}

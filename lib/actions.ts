@@ -28,6 +28,10 @@ const assignmentSchema = z
     title: z.string().min(1, "Title is required"),
     sourceUrl: z.string().url("Provide a valid URL"),
     instructions: z.string().min(1, "Instructions are required"),
+    requiresSubmission: z
+      .union([z.literal("on"), z.literal("true"), z.literal("false"), z.boolean()])
+      .optional()
+      .transform((v) => (v === undefined ? true : v === true || v === "on" || v === "true")),
     dueAt: z.string().optional().nullable(),
     assignScope: z.enum(["all", "selected"]).default("all"),
     studentIds: z.array(z.string().min(1)).optional(),
@@ -123,6 +127,7 @@ export async function createAssignment(formData: FormData) {
     title: formData.get("title"),
     sourceUrl: formData.get("sourceUrl"),
     instructions: formData.get("instructions"),
+    requiresSubmission: formData.get("requiresSubmission"),
     dueAt: formData.get("dueAt"),
     assignScope: typeof formData.get("assignScope") === "string" ? (formData.get("assignScope") as string) : "all",
     studentIds: formData.getAll("studentIds").map((value) => value.toString()),
@@ -141,6 +146,7 @@ export async function createAssignment(formData: FormData) {
     title: parsed.data.title,
     sourceUrl: parsed.data.sourceUrl,
     instructions: parsed.data.instructions,
+    requiresSubmission: parsed.data.requiresSubmission,
     dueAt: dueAt ?? undefined,
     createdAt: now,
   });

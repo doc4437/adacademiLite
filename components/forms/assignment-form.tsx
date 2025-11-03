@@ -20,6 +20,7 @@ export function AssignmentForm({ students }: { students: AssignmentFormStudent[]
   const [isPending, startTransition] = useTransition();
   const [assignScope, setAssignScope] = useState<"all" | "selected">("all");
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  const [requiresSubmission, setRequiresSubmission] = useState(true);
 
   const toggleStudent = (studentId: string) => {
     setSelectedStudents((current) =>
@@ -39,6 +40,7 @@ export function AssignmentForm({ students }: { students: AssignmentFormStudent[]
     const form = event.currentTarget; // cache before async work
     const formData = new FormData(form);
     formData.set("assignScope", assignScope);
+    formData.set("requiresSubmission", String(requiresSubmission));
     formData.delete("studentIds");
     if (assignScope === "selected") {
       selectedStudents.forEach((studentId) => formData.append("studentIds", studentId));
@@ -50,6 +52,7 @@ export function AssignmentForm({ students }: { students: AssignmentFormStudent[]
         form.reset();
         setAssignScope("all");
         setSelectedStudents([]);
+        setRequiresSubmission(true);
         toast({ title: "Assignment created" });
       } else {
         toast({ title: "Could not create assignment", description: result.error, variant: "destructive" });
@@ -64,11 +67,11 @@ export function AssignmentForm({ students }: { students: AssignmentFormStudent[]
         <Input id="title" name="title" placeholder="Assignment title" required disabled={isPending} />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="sourceUrl">Template URL</Label>
+        <Label htmlFor="sourceUrl">Resource URL</Label>
         <Input
           id="sourceUrl"
           name="sourceUrl"
-          placeholder="https://docs.google.com/.../copy"
+          placeholder="https://docs.google.com/.../copy or https://youtu.be/..."
           type="url"
           required
           disabled={isPending}
@@ -81,6 +84,18 @@ export function AssignmentForm({ students }: { students: AssignmentFormStudent[]
       <div className="grid gap-2">
         <Label htmlFor="dueAt">Due Date (optional)</Label>
         <Input id="dueAt" name="dueAt" type="date" disabled={isPending} />
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          id="requiresSubmission"
+          name="requiresSubmission"
+          type="checkbox"
+          className="h-4 w-4 rounded border"
+          checked={requiresSubmission}
+          onChange={(e) => setRequiresSubmission(e.target.checked)}
+          disabled={isPending}
+        />
+        <Label htmlFor="requiresSubmission">Students must submit a link</Label>
       </div>
       <div className="grid gap-2">
         <Label>Assign to</Label>

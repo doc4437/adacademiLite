@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { TaskAssignForm } from "@/components/forms/task-assign-form";
 import { TaskStatusButton } from "@/components/forms/task-status-button";
 import { TaskFilters } from "@/components/forms/task-filters";
+import { Badge } from "@/components/ui/badge";
 import { taskStatusLabels } from "@/lib/utils";
 import { and, desc, eq, sql } from "drizzle-orm";
 
@@ -49,6 +50,7 @@ export default async function AdminTasksPage({ searchParams }: AdminTasksPagePro
       studentName: students.displayName,
       studentAccess: students.accessCode,
       assignmentTitle: assignments.title,
+      requiresSubmission: assignments.requiresSubmission,
       sourceUrl: assignments.sourceUrl,
       latestArtifact: sql<string | null>`(SELECT artifactUrl FROM submissions WHERE submissions.taskId = ${tasks.id} ORDER BY submissions.submittedAt DESC LIMIT 1)`,
     })
@@ -87,7 +89,12 @@ export default async function AdminTasksPage({ searchParams }: AdminTasksPagePro
                     </Link>
                   </TableCell>
                   <TableCell>
-                    <div className="font-medium">{task.assignmentTitle}</div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="font-medium">{task.assignmentTitle}</div>
+                      {!task.requiresSubmission ? (
+                        <Badge variant="outline">No submission required</Badge>
+                      ) : null}
+                    </div>
                     <Link href={task.sourceUrl} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline">
                       Template
                     </Link>

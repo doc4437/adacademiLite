@@ -21,6 +21,7 @@ export default async function AdminAssignmentsPage() {
       title: assignments.title,
       sourceUrl: assignments.sourceUrl,
       instructions: assignments.instructions,
+      requiresSubmission: assignments.requiresSubmission,
       dueAt: assignments.dueAt,
       createdAt: assignments.createdAt,
     })
@@ -221,7 +222,12 @@ export default async function AdminAssignmentsPage() {
                 return (
                   <TableRow key={assignment.id} className={cn(isOverdue ? "bg-destructive/5" : undefined)} title={tooltip}>
                     <TableCell className="space-y-1">
-                      <div className="font-medium">{assignment.title}</div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="font-medium">{assignment.title}</div>
+                        {!assignment.requiresSubmission ? (
+                          <Badge variant="outline">No submission required</Badge>
+                        ) : null}
+                      </div>
                       <p className="text-sm text-muted-foreground">{assignment.instructions}</p>
                       <Button asChild variant="link" className="h-auto p-0 text-sm">
                         <Link href={assignment.sourceUrl} target="_blank" rel="noreferrer">
@@ -297,7 +303,12 @@ export default async function AdminAssignmentsPage() {
                     <div key={assignment.id} className="rounded-lg border p-3">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                          <div className="font-medium">{assignment.title}</div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <div className="font-medium">{assignment.title}</div>
+                            {!assignment.requiresSubmission ? (
+                              <Badge variant="outline">No submission required</Badge>
+                            ) : null}
+                          </div>
                           <p className="text-xs text-muted-foreground">
                             Due {assignment.dueDate ? format(assignment.dueDate, "MMM d") : "No due date"}
                           </p>

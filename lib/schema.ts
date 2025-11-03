@@ -26,6 +26,8 @@ export const assignments = sqliteTable("assignments", {
   title: text({ length: 255 }).notNull(),
   sourceUrl: text().notNull(),
   instructions: text().notNull(),
+  // When false, students can mark complete without submitting a link
+  requiresSubmission: integer({ mode: "boolean" }).notNull().default(true),
   dueAt: integer({ mode: "timestamp_ms" }),
   createdAt: integer({ mode: "timestamp_ms" })
     .notNull()

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { taskStatusLabels, taskStatusDisplayOrder } from "@/lib/utils";
 import { StudentStartButton } from "./student-start-button";
 import { StudentSubmissionDialog } from "./student-submission-dialog";
+import { StudentCompleteButton } from "./student-complete-button";
 import { TaskStatus } from "@/lib/schema";
 import Link from "next/link";
 
@@ -14,6 +15,7 @@ export type StudentTask = {
   assignmentTitle: string;
   instructions: string;
   sourceUrl: string;
+  requiresSubmission: boolean;
   latestArtifact: string | null;
 };
 
@@ -63,8 +65,19 @@ export function StudentTaskBoard({ tasks, hiddenStatuses = [] }: StudentTaskBoar
                       ) : null}
                     </div>
                     <div className="flex gap-2">
-                      {status === TaskStatus.ASSIGNED ? <StudentStartButton taskId={task.id} sourceUrl={task.sourceUrl} /> : null}
-                      {status === TaskStatus.IN_PROGRESS ? <StudentSubmissionDialog taskId={task.id} /> : null}
+                      {status === TaskStatus.ASSIGNED ? (
+                        <>
+                          <StudentStartButton taskId={task.id} sourceUrl={task.sourceUrl} />
+                          {!task.requiresSubmission ? <StudentCompleteButton taskId={task.id} /> : null}
+                        </>
+                      ) : null}
+                      {status === TaskStatus.IN_PROGRESS ? (
+                        task.requiresSubmission ? (
+                          <StudentSubmissionDialog taskId={task.id} />
+                        ) : (
+                          <StudentCompleteButton taskId={task.id} />
+                        )
+                      ) : null}
                     </div>
                   </div>
                   {task.latestArtifact ? (
