@@ -31,6 +31,8 @@ export default async function StudentPortalPage({ params }: StudentPortalPagePro
       assignmentId: assignments.id,
       dueAt: assignments.dueAt,
       sourceUrl: assignments.sourceUrl,
+      driveFileId: tasks.driveFileId,
+      driveKind: tasks.driveKind,
       requiresSubmission: assignments.requiresSubmission,
       latestArtifact: sql<string | null>`(SELECT artifactUrl FROM submissions WHERE submissions.taskId = ${tasks.id} ORDER BY submissions.submittedAt DESC LIMIT 1)`,
     })
@@ -46,6 +48,16 @@ export default async function StudentPortalPage({ params }: StudentPortalPagePro
       assignmentTitle: task.assignmentTitle,
       instructions: task.instructions,
       sourceUrl: task.sourceUrl,
+      resumeUrl:
+        task.driveFileId && task.driveKind
+          ? task.driveKind === "document"
+            ? `https://docs.google.com/document/d/${task.driveFileId}/edit`
+            : task.driveKind === "spreadsheets"
+            ? `https://docs.google.com/spreadsheets/d/${task.driveFileId}/edit`
+            : task.driveKind === "presentation"
+            ? `https://docs.google.com/presentation/d/${task.driveFileId}/edit`
+            : `https://drive.google.com/file/d/${task.driveFileId}/view`
+          : null,
       requiresSubmission: task.requiresSubmission,
       latestArtifact: task.latestArtifact,
     }));

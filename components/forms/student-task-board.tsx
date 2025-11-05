@@ -8,6 +8,7 @@ import { StudentSubmissionDialog } from "./student-submission-dialog";
 import { StudentCompleteButton } from "./student-complete-button";
 import { TaskStatus } from "@/lib/schema";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export type StudentTask = {
   id: string;
@@ -15,6 +16,7 @@ export type StudentTask = {
   assignmentTitle: string;
   instructions: string;
   sourceUrl: string;
+  resumeUrl?: string | null;
   requiresSubmission: boolean;
   latestArtifact: string | null;
 };
@@ -72,11 +74,20 @@ export function StudentTaskBoard({ tasks, hiddenStatuses = [] }: StudentTaskBoar
                         </>
                       ) : null}
                       {status === TaskStatus.IN_PROGRESS ? (
-                        task.requiresSubmission ? (
-                          <StudentSubmissionDialog taskId={task.id} />
-                        ) : (
-                          <StudentCompleteButton taskId={task.id} />
-                        )
+                        <>
+                          {task.resumeUrl ? (
+                            <Button asChild size="sm">
+                              <a href={task.resumeUrl} target="_blank" rel="noreferrer">
+                                Resume
+                              </a>
+                            </Button>
+                          ) : null}
+                          {task.requiresSubmission ? (
+                            <StudentSubmissionDialog taskId={task.id} />
+                          ) : (
+                            <StudentCompleteButton taskId={task.id} />
+                          )}
+                        </>
                       ) : null}
                     </div>
                   </div>

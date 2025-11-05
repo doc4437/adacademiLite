@@ -11,7 +11,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "seed": "tsx scripts/seed.ts",
-    "db:migrate:requiresSubmission": "tsx scripts/migrate-requires-submission.ts"
+    "db:migrate:requiresSubmission": "tsx scripts/migrate-requires-submission.ts",
+    "db:migrate:driveColumns": "tsx scripts/migrate-drive-columns.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.15.15",

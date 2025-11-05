@@ -42,6 +42,9 @@ export const tasks = sqliteTable("tasks", {
     .notNull()
     .$type<(typeof TaskStatus)[keyof typeof TaskStatus]>()
     .default(TaskStatus.ASSIGNED),
+  // Optional linkage to a copied Google Drive file
+  driveFileId: text(),
+  driveKind: text({ length: 32 }),
   createdAt: integer({ mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),
