@@ -55,7 +55,20 @@ turso db tokens create adacademi-lite
 Use the connection URL and token in your `.env.local` file.
 
 ## Google Template Guidance
-Assignments should link to Google Docs/Sheets/Slides template URLs ending in `/copy`. Students click **Start** to open the template in a new tab and immediately mark the task as in progress. They later submit a viewable link to their completed artifact.
+Use Google Docs/Sheets/Slides as templates and let students resume work from their own Drive copies.
+
+Recommended procedure
+- Create the template in Google Docs/Sheets/Slides.
+- Share the template: set General access to "Anyone with the link – Viewer" (or explicitly share with each student). This is required so the app can make a Drive copy via API.
+- Use the template URL in the assignment. A `/copy` URL is recommended for a good fallback, but not required for the API copy.
+- Student clicks Start/Open on their portal:
+  - If Drive access is granted, the server copies the template into the student’s Google Drive and saves the link. The UI then shows a Resume button to open their copy.
+  - If the copy fails (permissions, token, etc.), the app falls back to opening the original `sourceUrl`. With `/copy`, Google shows the "Make a copy" prompt.
+- The "Requires submission" setting only controls whether the student must submit a link vs. mark complete; it does not affect the Drive copy/resume behavior.
+
+Notes
+- The API copy works whether your template URL ends with `/view`, `/edit`, or `/copy`, but `/copy` is recommended for fallback behavior.
+- Ensure the Google Drive API is enabled in your Google Cloud project and that OAuth redirect URIs include both `/api/auth/callback/google` and `/api/auth/callback/google-drive` (see Deploying to Vercel).
 
 ## Scripts
 - `npm run dev` – start Next.js in development mode
