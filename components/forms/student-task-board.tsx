@@ -81,7 +81,9 @@ export function StudentTaskBoard({ tasks, hiddenStatuses = [] }: StudentTaskBoar
                                 Resume
                               </a>
                             </Button>
-                          ) : null}
+                          ) : (
+                            <StudentStartButton taskId={task.id} sourceUrl={task.sourceUrl} label="Open" />
+                          )}
                           {task.requiresSubmission ? (
                             <StudentSubmissionDialog taskId={task.id} />
                           ) : (
