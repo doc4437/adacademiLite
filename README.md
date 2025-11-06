@@ -76,10 +76,18 @@ Assignments should link to Google Docs/Sheets/Slides template URLs ending in `/c
    - `ADMIN_EMAILS` (comma-separated list)
    - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
    - `NEXTAUTH_SECRET` (generate with `npx auth secret`)
-   - Optional: `NEXTAUTH_URL` set to your production URL, e.g. `https://your-domain.vercel.app`
-3. In Google Cloud Console, set OAuth redirect URIs:
-   - Local: `http://localhost:3000/api/auth/callback/google`
-   - Prod: `https://<your-domain>/api/auth/callback/google`
+   - Optional: `NEXTAUTH_URL` set to your production URL, e.g. `https://adacademilite.vercel.app`
+3. In Google Cloud Console, set OAuth redirect URIs (both providers):
+   - Local:
+     - `http://localhost:3000/api/auth/callback/google`
+     - `http://localhost:3000/api/auth/callback/google-drive`
+   - Prod (Vercel):
+     - `https://adacademilite.vercel.app/api/auth/callback/google`
+     - `https://adacademilite.vercel.app/api/auth/callback/google-drive`
+   Notes:
+   - The app uses incremental auth for Google Drive with a second provider id `google-drive`, which requires the second callback URI.
+   - URIs must match exactly (scheme, host, path; no trailing slash).
+   - In Google Cloud Console → APIs & Services, enable the Google Drive API for your project.
 4. Build settings: Framework = Next.js (defaults are fine). No `vercel.json` required.
 5. Database: Run `npm run db:push` locally once against the same Turso DB to create tables. The Vercel build does not run migrations.
 6. Push to `main` (or your chosen branch) to trigger a deployment.
